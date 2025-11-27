@@ -2,8 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
 
 jobs:
   build:
@@ -13,7 +12,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Install JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -22,11 +21,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build APK
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Build all sample modules
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Upload APK
+      - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/*.apk
+          name: all-sample-apks
+          path: "**/build/outputs/apk/**/*.apk"

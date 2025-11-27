@@ -1,34 +1,38 @@
-name: Build Android APK
+name: Build APKs for Compose Samples
 
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Install JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Grant execute permission for Gradlew
-        run: chmod +x gradlew
+      # Build All Subfolders Containing gradlew
+      - name: Build All gradlew Projects
+        run: |
+          for f in $(find . -name "gradlew"); do
+            echo "Building project in $(dirname $f)"
+            chmod +x $f
+            (cd "$(dirname $f)" && ./gradlew assembleDebug --stacktrace)
+          done
 
-      - name: Build all sample modules
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Upload APK artifacts
+      - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
-          name: all-sample-apks
+          name: compose-samples-apks
           path: "**/build/outputs/apk/**/*.apk"
